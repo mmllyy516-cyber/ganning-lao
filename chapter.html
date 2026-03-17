@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>章节</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main>
+        <article class="chapter-content">
+            <div class="chapter-header">
+                <h1 id="chapter-title">加载中...</h1>
+                <p class="date" id="chapter-date"></p>
+            </div>
+            
+            <div class="chapter-body" id="chapter-body">
+                <!-- 章节内容由 JavaScript 加载 -->
+            </div>
+            
+            <div class="like-section">
+                <button class="like-btn" onclick="handleLike()">
+                    ❤️ 喜欢<span class="like-count">0</span>
+                </button>
+            </div>
+            
+            <div class="nav">
+                <a href="index.html">← 返回目录</a>
+                <a href="#" id="next-chapter" style="display: none;">下一章 →</a>
+            </div>
+        </article>
+    </main>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        let currentChapter = null;
+        
+        // 加载章节
+        async function loadChapter() {
+            const id = getUrlParam('id');
+            const chapter = chapters.find(ch => ch.id === id);
+            
+            if (!chapter) {
+                document.getElementById('chapter-title').textContent = '章节不存在';
+                document.getElementById('chapter-body').innerHTML = '<p>请从目录选择章节。</p>';
+                return;
+            }
+            
+            currentChapter = chapter;
+            document.getElementById('chapter-title').textContent = chapter.title;
+            document.getElementById('chapter-date').textContent = chapter.date;
+            document.title = chapter.title + ' - 甘宁老';
+            
+            // 加载 markdown 文件
+            try {
+                const response = await fetch(chapter.file);
+                if (response.ok) {
+                    const text = await response.text();
+                    document.getElementById('chapter-body').innerHTML = marked.parse(text);
+                } else {
+                    document.getElementById('chapter-body').innerHTML = '<p>内容加载失败，请稍后再试。</p>';
+                }
+            } catch (e) {
+                document.getElementById('chapter-body').innerHTML = '<p>内容加载失败，请稍后再试。</p>';
+            }
+            
+            // 更新点赞按钮
+            updateLikeButton(chapter.id);
+            
+            // 下一章链接
+            const idx = chapters.findIndex(ch => ch.id === id);
+            if (idx > 0) {
+                const next = chapters[idx - 1];
+                const nextLink = document.getElementById('next-chapter');
+                nextLink.href = `chapter.html?id=${next.id}`;
+                nextLink.textContent = `${next.title} →`;
+                nextLink.style.display = 'inline';
+            }
+        }
+        
+        function handleLike() {
+            if (currentChapter) {
+                toggleLike(currentChapter.id);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadChapter);
+    </script>
+</body>
+</html>
