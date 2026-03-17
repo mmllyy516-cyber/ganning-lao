@@ -1,6 +1,12 @@
 // 章节数据 - 在这里添加新章节
 const chapters = [
     {
+        id: 'chapter-002',
+        title: '第二章：她的秘密',
+        date: '2026-03-17',
+        file: 'chapters/chapter-002.md'
+    },
+    {
         id: 'chapter-001',
         title: '第一章：她来了',
         date: '2026-03-17',
